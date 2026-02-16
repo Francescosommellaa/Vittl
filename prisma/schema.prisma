@@ -7,10 +7,328 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
+// ---------- ENUMS ----------
+
+enum TenantPlan {
+  FREE
+  START
+  PRO
+  ENTERPRISE
+}
+
+enum StaffRole {
+  OWNER
+  MANAGER
+  CHEF
+  WAITER
+  VIEW_ONLY
+}
+
+enum MediaType {
+  IMAGE
+}
+
+enum Unit {
+  GRAM
+  KILOGRAM
+  MILLILITER
+  LITER
+  PIECE
+}
+
+enum AllergenEU {
+  CEREALS_GLUTEN
+  CRUSTACEANS
+  EGGS
+  FISH
+  PEANUTS
+  SOYBEANS
+  MILK
+  NUTS
+  CELERY
+  MUSTARD
+  SESAME
+  SULPHITES
+  LUPIN
+  MOLLUSCS
+}
+
+// ---------- CORE MULTI-TENANT ----------
+
+model Tenant {
+  id        String     @id @default(uuid())
+  name      String
+  plan      TenantPlan
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  locations    Location[]
+  staffMembers StaffMembership[]
+  users        User[]            @relation("TenantUsers")
+
+  // config vari (currency, ecc.)
+  currency    String       @default("EUR")
+  ingredients Ingredient[]
+  recipes     Recipe[]
+
+  @@index([plan])
+}
+
+model Location {
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  address   String?
+  city      String?
+  country   String?
+  timezone  String?  @default("Europe/Rome")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tenant           Tenant            @relation(fields: [tenantId], references: [id])
+  menus            Menu[]
+  recipes          Recipe[]
+  ingredients      Ingredient[]
+  staffMemberships StaffMembership[]
+
+  @@index([tenantId])
+}
+
+// Utente "globale" (può stare in più tenant)
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  hashedPassword String
+  name           String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  staffMemberships StaffMembership[]
+  // tenant principale (es. primo creato)
+  primaryTenantId  String?
+  primaryTenant    Tenant?           @relation("TenantUsers", fields: [primaryTenantId], references: [id])
+  recipeLikes      RecipeLike[]
+  recipeCopyLogs   RecipeCopyLog[]
+}
+
+// Bridge User <-> Tenant/Location
+model StaffMembership {
+  id         String    @id @default(uuid())
+  userId     String
+  tenantId   String
+  locationId String?
+  role       StaffRole
+  createdAt  DateTime  @default(now())
+
+  user     User      @relation(fields: [userId], references: [id])
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  location Location? @relation(fields: [locationId], references: [id])
+
+  @@unique([userId, tenantId, locationId])
+  @@index([tenantId])
+  @@index([locationId])
+}
+
+// ---------- INGREDIENTI & ALLERGENI ----------
+
+model Ingredient {
+  id         String   @id @default(uuid())
+  tenantId   String
+  locationId String?
+  name       String
+  unit       Unit
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant      Tenant               @relation(fields: [tenantId], references: [id])
+  location    Location?            @relation(fields: [locationId], references: [id])
+  prices      IngredientPrice[]
+  allergens   IngredientAllergen[]
+  recipeItems RecipeIngredient[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+}
+
+model IngredientPrice {
+  id           String   @id @default(uuid())
+  ingredientId String
+  validFrom    DateTime
+  price        Decimal  @db.Decimal(10, 4) // prezzo per unità base
+  createdAt    DateTime @default(now())
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@index([ingredientId, validFrom])
+}
+
+model IngredientAllergen {
+  id           String     @id @default(uuid())
+  ingredientId String
+  allergen     AllergenEU
+
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@unique([ingredientId, allergen])
+  @@index([allergen])
+}
+
+// ---------- RICETTE & SOCIAL LITE ----------
+
+model Recipe {
+  id          String   @id @default(uuid())
+  tenantId    String
+  locationId  String?
+  name        String
+  description String?
+  isPublic    Boolean  @default(false)
+  baseYield   Int      @default(1) // porzioni
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // copia / origine
+  originalRecipeId       String?
+  originalAuthorTenantId String?
+  originalAuthorRecipeId String?
+
+  tenant         Tenant             @relation(fields: [tenantId], references: [id])
+  location       Location?          @relation(fields: [locationId], references: [id])
+  originalRecipe Recipe?            @relation("RecipeOrigin", fields: [originalRecipeId], references: [id])
+  derivedRecipes Recipe[]           @relation("RecipeOrigin")
+  ingredients    RecipeIngredient[]
+  media          Media[]
+  menuItems      MenuItem[]
+  likes          RecipeLike[]
+  copyLogsSource RecipeCopyLog[]    @relation("SourceRecipe")
+  copyLogsTarget RecipeCopyLog[]    @relation("TargetRecipe")
+
+  @@index([tenantId])
+  @@index([isPublic])
+}
+
+model RecipeIngredient {
+  id           String  @id @default(uuid())
+  recipeId     String
+  ingredientId String
+  quantity     Decimal @db.Decimal(10, 4)
+  unit         Unit? // opzionale se vuoi sovrascrivere unit base
+
+  recipe     Recipe     @relation(fields: [recipeId], references: [id])
+  ingredient Ingredient @relation(fields: [ingredientId], references: [id])
+
+  @@index([recipeId])
+  @@index([ingredientId])
+}
+
+model Media {
+  id        String    @id @default(uuid())
+  recipeId  String
+  type      MediaType
+  url       String
+  isPrimary Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  recipe Recipe @relation(fields: [recipeId], references: [id])
+
+  @@index([recipeId])
+}
+
+model RecipeLike {
+  id        String   @id @default(uuid())
+  recipeId  String
+  userId    String
+  createdAt DateTime @default(now())
+
+  recipe Recipe @relation(fields: [recipeId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([recipeId, userId])
+}
+
+model RecipeCopyLog {
+  id             String   @id @default(uuid())
+  sourceRecipeId String
+  targetRecipeId String
+  copiedByUserId String
+  copiedAt       DateTime @default(now())
+
+  sourceRecipe Recipe @relation("SourceRecipe", fields: [sourceRecipeId], references: [id])
+  targetRecipe Recipe @relation("TargetRecipe", fields: [targetRecipeId], references: [id])
+  copiedByUser User   @relation(fields: [copiedByUserId], references: [id])
+
+  @@index([sourceRecipeId])
+  @@index([targetRecipeId])
+}
+
+// ---------- MENU & QR ----------
+
+model Menu {
+  id          String   @id @default(uuid())
+  locationId  String
+  title       String
+  slug        String
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  location Location      @relation(fields: [locationId], references: [id])
+  sections MenuSection[]
+  qrcodes  MenuQRCode[]
+
+  @@unique([locationId, slug])
+  @@index([locationId])
+}
+
+model MenuQRCode {
+  id        String   @id @default(uuid())
+  menuId    String
+  code      String   @unique // hash che metti nell'URL
+  createdAt DateTime @default(now())
+
+  menu Menu @relation(fields: [menuId], references: [id])
+}
+
+model MenuSection {
+  id        String   @id @default(uuid())
+  menuId    String
+  title     String
+  position  Int
+  createdAt DateTime @default(now())
+
+  menu  Menu       @relation(fields: [menuId], references: [id])
+  items MenuItem[]
+
+  @@index([menuId])
+}
+
+model MenuItem {
+  id            String   @id @default(uuid())
+  menuSectionId String
+  recipeId      String
+  title         String?
+  description   String?
+  price         Decimal  @db.Decimal(10, 2)
+  isAvailable   Boolean  @default(true)
+  position      Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  menuSection       MenuSection                @relation(fields: [menuSectionId], references: [id])
+  recipe            Recipe                     @relation(fields: [recipeId], references: [id])
+  allergenOverrides MenuItemAllergenOverride[]
+
+  @@index([menuSectionId])
+  @@index([recipeId])
+}
+
+model MenuItemAllergenOverride {
+  id         String     @id @default(uuid())
+  menuItemId String
+  allergen   AllergenEU
+  include    Boolean // true = forza presenza, false = forza assenza
+  createdAt  DateTime   @default(now())
+
+  menuItem MenuItem @relation(fields: [menuItemId], references: [id])
+
+  @@unique([menuItemId, allergen])
 }
