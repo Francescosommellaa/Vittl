@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Image from "next/image";
+import { images } from "@/app/assets/images";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -24,8 +26,15 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="text-2xl font-semibold text-gray-900">
-            Vittl
+          <Link href="/" className="flex items-center">
+            <Image
+              src={images.logo.dark}
+              alt="Vittl"
+              width={80}
+              height={28}
+              priority
+              className="h-7 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}

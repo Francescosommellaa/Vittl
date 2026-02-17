@@ -1,12 +1,18 @@
 import Hero from "./components/Hero";
-import Features from "./components/Features";
+import ProblemSection from "./components/ProblemSection";
+import FeaturesGrid from "./components/Features";
+import FeatureShowcase from "./components/FeatureShowcase";
+import PricingTeaser from "./components/PricingTeaser";
 import CTA from "./components/CTA";
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <main>
       <Hero />
-      <Features />
+      <ProblemSection />
+      <FeaturesGrid />
+      <FeatureShowcase />
+      <PricingTeaser />
       <CTA />
     </main>
   );

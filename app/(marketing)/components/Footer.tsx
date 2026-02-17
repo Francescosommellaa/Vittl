@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Image from "next/image";
+import { images } from "@/app/assets/images";
 
 export default function Footer() {
   return (
@@ -8,7 +10,13 @@ export default function Footer() {
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           {/* Brand */}
           <div>
-            <h3 className="text-2xl font-semibold text-gray-900 mb-4">Vittl</h3>
+            <Image
+              src={images.logo.dark}
+              alt="Vittl"
+              width={80}
+              height={28}
+              className="h-7 w-auto mb-4"
+            />
             <p className="text-gray-500 text-sm font-light">
               La piattaforma di gestione per ristoranti italiani.
             </p>

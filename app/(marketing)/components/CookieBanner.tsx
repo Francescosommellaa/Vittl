@@ -61,7 +61,7 @@ export default function CookieBanner() {
         className={`fixed z-50 transition-all duration-500 ease-out ${
           showDetails
             ? "inset-0 flex items-end sm:items-center justify-center p-4 sm:p-6"
-            : "bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-[420px]"
+            : "bottom-6 left-4 right-4 sm:left-auto sm:right-6 sm:w-105"
         }`}
       >
         <div
