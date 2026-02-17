@@ -48,3 +48,4 @@ next-env.d.ts
 .env*.local
 
 /app/generated/prisma
+.vscode/settings.json
