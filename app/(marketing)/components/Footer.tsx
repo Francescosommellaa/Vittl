@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer className="bg-white border-t border-gray-100 py-12 px-6">
@@ -17,28 +19,28 @@ export default function Footer() {
             <h4 className="font-semibold text-gray-900 mb-4">Prodotto</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/#features"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Funzionalità
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/recensioni"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  Prezzi
-                </a>
+                  Recensioni
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/contatti"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Demo
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -48,28 +50,20 @@ export default function Footer() {
             <h4 className="font-semibold text-gray-900 mb-4">Azienda</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/chi-siamo"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Chi siamo
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
-                  className="text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  Blog
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
+                <Link
+                  href="/contatti"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Contatti
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -79,28 +73,28 @@ export default function Footer() {
             <h4 className="font-semibold text-gray-900 mb-4">Legale</h4>
             <ul className="space-y-3 text-sm">
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/privacy"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  Privacy
-                </a>
+                  Privacy Policy
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/termini"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  Termini
-                </a>
+                  Termini e Condizioni
+                </Link>
               </li>
               <li>
-                <a
-                  href="#"
+                <Link
+                  href="/cookie"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  Cookie
-                </a>
+                  Cookie Policy
+                </Link>
               </li>
             </ul>
           </div>
