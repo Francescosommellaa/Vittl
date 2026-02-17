@@ -43,10 +43,10 @@ export default function Navbar() {
               Chi siamo
             </Link>
             <Link
-              href="/recensioni"
+              href="/piani"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
             >
-              Recensioni
+              Piani
             </Link>
             <Link
               href="/contatti"

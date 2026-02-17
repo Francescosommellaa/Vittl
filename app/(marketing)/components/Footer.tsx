@@ -28,10 +28,10 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/recensioni"
+                  href="/piani"
                   className="text-gray-500 hover:text-gray-900 transition-colors"
                 >
-                  Recensioni
+                  Piani
                 </Link>
               </li>
               <li>
