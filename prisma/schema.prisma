@@ -96,15 +96,15 @@ model Location {
 
 // Utente "globale" (può stare in più tenant)
 model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
-  hashedPassword String
-  name           String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id        String   @id @default(uuid())
+  clerkId   String   @unique
+  email     String   @unique
+  name      String?
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   staffMemberships StaffMembership[]
-  // tenant principale (es. primo creato)
   primaryTenantId  String?
   primaryTenant    Tenant?           @relation("TenantUsers", fields: [primaryTenantId], references: [id])
   recipeLikes      RecipeLike[]
