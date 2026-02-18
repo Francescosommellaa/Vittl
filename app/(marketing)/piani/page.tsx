@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { Check, X } from "lucide-react";
+import { useInView } from "@/app/hooks/useInView";
 
 const included = [
   "Menu digitale con QR e aggiornamento in tempo reale",
@@ -103,11 +105,11 @@ const plans = [
 const faqs = [
   {
     q: "Come funziona la prova gratuita di 14 giorni?",
-    a: "Scegli il piano Start o Pro e accedi a tutte le funzionalità. Dopo 14 giorni scegli se continuare o tornare al piano Free.",
+    a: "Scegli il piano Start o Pro e accedi a tutte le funzionalità senza inserire la carta di credito. Dopo 14 giorni scegli se continuare o tornare al piano Free.",
   },
   {
     q: "Posso cambiare piano in qualsiasi momento?",
-    a: "Sì. Puoi effettuare upgrade o downgrade in qualsiasi momento e continuerai a usufruire del piano attuale fino alla fine del periodo di fatturazione.",
+    a: "Sì. Upgrade e downgrade sono immediati. Il costo viene calcolato in modo proporzionale ai giorni rimanenti del periodo.",
   },
   {
     q: "Quanto risparmio con il piano annuale?",
@@ -127,46 +129,27 @@ const faqs = [
   },
 ];
 
-function CheckIcon({ white }: { white?: boolean }) {
-  return (
-    <svg
-      className={`w-4 h-4 mt-0.5 ${white ? "text-white" : "text-gray-700"}`}
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2.5}
-        d="M5 13l4 4L19 7"
-      />
-    </svg>
-  );
-}
-
-function CrossIcon() {
-  return (
-    <svg
-      className="w-4 h-4 text-gray-300 mt-0.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M6 18L18 6M6 6l12 12"
-      />
-    </svg>
-  );
-}
-
-function FaqItem({ q, a }: { q: string; a: string }) {
+function FaqItem({
+  q,
+  a,
+  index,
+  inView,
+}: {
+  q: string;
+  a: string;
+  index: number;
+  inView: boolean;
+}) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-gray-100 last:border-0">
+    <div
+      className="border-b border-gray-100 last:border-0 transition-all duration-500"
+      style={{
+        opacity: inView ? 1 : 0,
+        transform: inView ? "translateY(0)" : "translateY(16px)",
+        transitionDelay: `${index * 60}ms`,
+      }}
+    >
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-6 text-left group"
@@ -175,7 +158,9 @@ function FaqItem({ q, a }: { q: string; a: string }) {
           {q}
         </span>
         <span
-          className={`w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-all duration-300 ${open ? "rotate-45 bg-gray-900" : ""}`}
+          className={`shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center transition-all duration-300 ${
+            open ? "rotate-45 bg-gray-900" : ""
+          }`}
         >
           <svg
             className={`w-4 h-4 transition-colors ${open ? "text-white" : "text-gray-600"}`}
@@ -205,32 +190,43 @@ function FaqItem({ q, a }: { q: string; a: string }) {
 
 export default function PianiPage() {
   const [isAnnual, setIsAnnual] = useState(false);
+  const { ref: heroRef, inView: heroInView } = useInView(0.1);
+  const { ref: cardsRef, inView: cardsInView } = useInView(0.05);
+  const { ref: includedRef, inView: includedInView } = useInView(0.15);
+  const { ref: faqRef, inView: faqInView } = useInView(0.1);
 
   return (
-    <main className="min-h-screen bg-gray-100">
-      {/* Hero */}
-      <section className="pt-40 pb-16 px-6 text-center bg-white">
-        <div className="max-w-3xl mx-auto">
-          <p className="text-sm font-medium text-gray-400 tracking-widest uppercase mb-6">
+    <main className="min-h-screen bg-gray-50">
+      {/* ── Hero ─────────────────────────────────── */}
+      <section className="bg-white border-b border-gray-100 pt-40 pb-20 px-6">
+        <div
+          ref={heroRef}
+          className="max-w-4xl mx-auto text-center transition-all duration-700"
+          style={{
+            opacity: heroInView ? 1 : 0,
+            transform: heroInView ? "translateY(0)" : "translateY(24px)",
+          }}
+        >
+          <p className="text-sm font-semibold text-gray-400 tracking-widest uppercase mb-6">
             Piani e Prezzi
           </p>
-          <h1 className="text-6xl md:text-7xl font-semibold text-gray-900 tracking-tight mb-6">
+          <h1 className="text-6xl md:text-7xl font-semibold text-gray-900 tracking-tight leading-none mb-6">
             Semplice.
             <br />
-            <span className="text-gray-400">Trasparente.</span>
+            <span className="text-gray-300">Trasparente.</span>
           </h1>
-          <p className="text-xl text-gray-500 font-light leading-relaxed mb-12">
+          <p className="text-xl text-gray-500 font-light leading-relaxed mb-12 max-w-xl mx-auto">
             Nessun costo nascosto. 14 giorni di prova gratuita su tutti i piani
             a pagamento.
           </p>
 
           {/* Toggle */}
-          <div className="inline-flex items-center gap-0 bg-gray-100 rounded-full p-1.5">
+          <div className="inline-flex items-center gap-0 bg-gray-100 rounded-full p-1.5 shadow-sm">
             <button
               onClick={() => setIsAnnual(false)}
-              className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
+              className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 ${
                 !isAnnual
-                  ? "bg-white text-gray-900 shadow-sm"
+                  ? "bg-white text-gray-900 shadow-md"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
@@ -238,32 +234,36 @@ export default function PianiPage() {
             </button>
             <button
               onClick={() => setIsAnnual(true)}
-              className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 flex items-center gap-2 ${
+              className={`px-6 py-3 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 ${
                 isAnnual
-                  ? "bg-white text-gray-900 shadow-sm"
+                  ? "bg-white text-gray-900 shadow-md"
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
               Annuale
-              <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
+              <span className="bg-green-100 text-green-700 text-xs font-bold px-2.5 py-1 rounded-full">
                 -17%
               </span>
             </button>
           </div>
 
           <div
-            className={`mt-2 text-sm text-green-600 font-medium transition-all duration-300 ${isAnnual ? "opacity-100" : "opacity-0"}`}
+            className={`mt-2 text-sm font-medium transition-all duration-300 ${
+              isAnnual
+                ? "opacity-100 text-green-600"
+                : "opacity-0 text-transparent"
+            }`}
           >
             🎉 Risparmi 2 mesi pagando annualmente
           </div>
         </div>
       </section>
 
-      {/* Cards */}
-      <section className="py-8 px-6">
+      {/* ── Cards ────────────────────────────────── */}
+      <section ref={cardsRef} className="py-2 px-6">
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
-            {plans.map((plan) => {
+            {plans.map((plan, planIndex) => {
               const isEnterprise = plan.monthlyPrice === null;
               const isFree = plan.monthlyPrice === 0;
               const stripeLink = isAnnual
@@ -281,22 +281,29 @@ export default function PianiPage() {
               return (
                 <div
                   key={plan.name}
-                  className={`relative flex flex-col rounded-3xl transition-all duration-300 hover:-translate-y-1 ${
+                  className={`relative flex flex-col rounded-3xl transition-all duration-500 hover:-translate-y-1 ${
                     plan.highlight
                       ? "bg-gray-900 shadow-2xl ring-1 ring-gray-800"
                       : "bg-white shadow-md ring-1 ring-gray-200 hover:shadow-xl"
                   }`}
+                  style={{
+                    opacity: cardsInView ? 1 : 0,
+                    transform: cardsInView
+                      ? "translateY(0) scale(1)"
+                      : "translateY(24px) scale(0.95)",
+                    transitionDelay: `${planIndex * 80}ms`,
+                  }}
                 >
                   {/* Badge */}
                   {plan.badge && (
                     <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-10">
-                      <span className="px-4 py-1.5 bg-gray-900 text-white text-xs font-bold rounded-full shadow-lg border border-gray-700">
+                      <span className="px-4 py-1.5 bg-gray-900 text-white text-xs font-bold rounded-full shadow-lg border border-gray-800">
                         {plan.badge}
                       </span>
                     </div>
                   )}
 
-                  {/* Top Section - fixed height */}
+                  {/* Top Section */}
                   <div className="p-8 pb-6">
                     {/* Nome + descrizione */}
                     <div className="h-16 mb-6">
@@ -312,17 +319,17 @@ export default function PianiPage() {
                       </p>
                     </div>
 
-                    {/* Prezzo - fixed height */}
+                    {/* Prezzo */}
                     <div className="h-24 flex flex-col justify-center">
                       {isEnterprise ? (
                         <span
-                          className={`text-5xl font-semibold ${plan.highlight ? "text-white" : "text-gray-900"}`}
+                          className={`text-5xl font-semibold tracking-tight ${plan.highlight ? "text-white" : "text-gray-900"}`}
                         >
                           Custom
                         </span>
                       ) : isFree ? (
                         <span
-                          className={`text-5xl font-semibold ${plan.highlight ? "text-white" : "text-gray-900"}`}
+                          className={`text-5xl font-semibold tracking-tight ${plan.highlight ? "text-white" : "text-gray-900"}`}
                         >
                           Gratis
                         </span>
@@ -335,7 +342,7 @@ export default function PianiPage() {
                               €
                             </span>
                             <span
-                              className={`text-5xl font-semibold leading-none ${plan.highlight ? "text-white" : "text-gray-900"}`}
+                              className={`text-5xl font-bold leading-none tracking-tight ${plan.highlight ? "text-white" : "text-gray-900"}`}
                             >
                               {isAnnual ? monthlyEquivalent : plan.monthlyPrice}
                             </span>
@@ -371,15 +378,15 @@ export default function PianiPage() {
                       )}
                     </div>
 
-                    {/* CTA Button */}
+                    {/* CTA */}
                     <div className="mt-6">
                       <a
                         href={stripeLink}
                         target={isEnterprise || isFree ? "_self" : "_blank"}
                         rel="noopener noreferrer"
-                        className={`block text-center py-3.5 px-6 rounded-full text-sm font-semibold transition-all hover:scale-105 ${
+                        className={`block text-center py-3.5 px-6 rounded-full text-sm font-bold transition-all duration-300 hover:scale-[1.03] ${
                           plan.highlight
-                            ? "bg-white text-gray-900 hover:bg-gray-100"
+                            ? "bg-white text-gray-900 hover:bg-gray-100 shadow-md"
                             : "bg-gray-900 text-white hover:bg-gray-800"
                         }`}
                       >
@@ -390,7 +397,7 @@ export default function PianiPage() {
                             : "Prova 14 giorni gratis"}
                       </a>
                       <p
-                        className={`text-xs text-center mt-2 h-4 ${plan.highlight ? "text-gray-600" : "text-gray-400"}`}
+                        className={`text-xs text-center mt-2.5 h-4 ${plan.highlight ? "text-gray-600" : "text-gray-400"}`}
                       >
                         {!isFree && !isEnterprise
                           ? "Nessuna carta richiesta"
@@ -408,7 +415,10 @@ export default function PianiPage() {
                   <div className="p-8 pt-6 flex-1 space-y-3">
                     {plan.features.map((feature, i) => (
                       <div key={i} className="flex items-start gap-3">
-                        <CheckIcon white={plan.highlight} />
+                        <Check
+                          className={`w-4 h-4 mt-0.5 shrink-0 ${plan.highlight ? "text-white" : "text-gray-700"}`}
+                          strokeWidth={2.5}
+                        />
                         <span
                           className={`text-sm leading-relaxed ${plan.highlight ? "text-gray-300" : "text-gray-600"}`}
                         >
@@ -418,7 +428,10 @@ export default function PianiPage() {
                     ))}
                     {plan.limitations.map((limitation, i) => (
                       <div key={i} className="flex items-start gap-3">
-                        <CrossIcon />
+                        <X
+                          className="w-4 h-4 text-gray-300 mt-0.5 shrink-0"
+                          strokeWidth={2}
+                        />
                         <span className="text-sm text-gray-400 leading-relaxed">
                           {limitation}
                         </span>
@@ -432,22 +445,33 @@ export default function PianiPage() {
         </div>
       </section>
 
-      {/* Incluso in tutti i piani */}
-      <section className="py-2 px-6">
-        <div className="max-w-5xl mx-auto">
+      {/* ── Incluso ─────────────────────────────── */}
+      <section ref={includedRef} className="py-12 px-6">
+        <div
+          className="max-w-5xl mx-auto transition-all duration-700"
+          style={{
+            opacity: includedInView ? 1 : 0,
+            transform: includedInView ? "translateY(0)" : "translateY(24px)",
+          }}
+        >
           <div className="bg-white rounded-3xl p-10 shadow-sm ring-1 ring-gray-200">
             <div className="text-center mb-10">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                ✦ Incluso in tutti i piani
-              </h2>
-              <p className="text-gray-500 text-sm font-light">
+              <div className="inline-flex items-center gap-2.5 bg-gray-50 border border-gray-100 rounded-full px-5 py-2 mb-4">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  ✦ Incluso in tutti i piani
+                </span>
+              </div>
+              <p className="text-sm text-gray-500 font-light">
                 Da subito, senza limitazioni.
               </p>
             </div>
             <div className="grid sm:grid-cols-2 gap-4">
               {included.map((item, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <CheckIcon />
+                  <Check
+                    className="w-4 h-4 text-gray-700 mt-0.5 shrink-0"
+                    strokeWidth={2.5}
+                  />
                   <span className="text-gray-600 text-sm leading-relaxed">
                     {item}
                   </span>
@@ -458,37 +482,101 @@ export default function PianiPage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-16 px-6 pb-24">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-semibold text-gray-900 text-center mb-12">
-            Domande frequenti
-          </h2>
-          <div className="bg-white rounded-3xl px-10 shadow-sm ring-1 ring-gray-200">
-            {faqs.map((faq, i) => (
-              <FaqItem key={i} q={faq.q} a={faq.a} />
+      {/* ── Trust badges ────────────────────────── */}
+      <section className="py-2 px-6">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              {
+                icon: "🔒",
+                title: "Pagamenti sicuri",
+                desc: "Gestiti da Stripe, leader mondiale",
+              },
+              {
+                icon: "🇪🇺",
+                title: "GDPR compliant",
+                desc: "Server in Europa, dati protetti",
+              },
+              {
+                icon: "✓",
+                title: "Supporto italiano",
+                desc: "Team in Italia, risposta in 24h",
+              },
+            ].map((item, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-4 p-6 bg-white rounded-2xl border border-gray-100 shadow-sm"
+              >
+                <span className="text-3xl">{item.icon}</span>
+                <div>
+                  <p className="text-sm font-semibold text-gray-900 mb-0.5">
+                    {item.title}
+                  </p>
+                  <p className="text-xs text-gray-400 font-light">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Finale */}
-      <section className="py-24 px-6 bg-gray-900 text-white text-center">
+      {/* ── FAQ ──────────────────────────────────── */}
+      <section ref={faqRef} className="py-16 px-6 pb-24">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-5xl font-semibold mb-6">Inizia oggi, gratis.</h2>
-          <p className="text-xl text-gray-400 font-light mb-10">
-            14 giorni di prova. Nessuna carta richiesta.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div
+            className="text-center mb-12 transition-all duration-700"
+            style={{
+              opacity: faqInView ? 1 : 0,
+              transform: faqInView ? "translateY(0)" : "translateY(20px)",
+            }}
+          >
+            <p className="text-sm font-semibold text-gray-400 tracking-widest uppercase mb-4">
+              FAQ
+            </p>
+            <h2 className="text-4xl md:text-5xl font-semibold text-gray-900 tracking-tight">
+              Domande frequenti
+            </h2>
+          </div>
+          <div className="bg-white rounded-3xl px-10 shadow-sm ring-1 ring-gray-200">
+            {faqs.map((faq, i) => (
+              <FaqItem
+                key={i}
+                q={faq.q}
+                a={faq.a}
+                index={i}
+                inView={faqInView}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA ──────────────────────────────────── */}
+      <section className="py-24 px-6 bg-gray-900">
+        <div className="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+          <div>
+            <h2 className="text-3xl font-semibold text-white mb-2">
+              Inizia oggi, gratis.
+            </h2>
+            <p className="text-gray-400 font-light">
+              14 giorni di prova. Nessuna carta richiesta.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 shrink-0">
             <Link
               href="/signup"
-              className="group px-8 py-4 bg-white text-gray-900 rounded-full font-semibold hover:bg-gray-100 transition-all hover:scale-105"
+              className="group flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-gray-100 hover:scale-[1.03] hover:shadow-2xl hover:shadow-white/10"
             >
-              Inizia gratis →
+              Inizia gratis
+              <span className="transition-transform duration-300 group-hover:translate-x-0.5">
+                →
+              </span>
             </Link>
             <Link
               href="/contatti"
-              className="px-8 py-4 border-2 border-gray-700 text-white rounded-full font-medium hover:border-gray-500 hover:bg-gray-800 transition-all"
+              className="flex items-center justify-center px-8 py-4 border border-gray-700 text-gray-300 rounded-full font-medium text-sm transition-all duration-300 hover:border-gray-500 hover:text-white hover:bg-white/5"
             >
               Parla con noi
             </Link>
