@@ -11,9 +11,11 @@ export default function LoginPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [errorField, setErrorField] = useState<"email" | "password" | null>(
+    null,
+  );
   const [form, setForm] = useState({ email: "", password: "" });
 
-  // Se già loggato, redirect a dashboard
   useEffect(() => {
     if (isSignedIn) {
       router.push("/dashboard");
@@ -22,6 +24,11 @@ export default function LoginPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    // Reset errore quando l'utente modifica il campo
+    if (errorField === e.target.name) {
+      setError("");
+      setErrorField(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,6 +36,7 @@ export default function LoginPage() {
     if (!isLoaded) return;
     setLoading(true);
     setError("");
+    setErrorField(null);
 
     try {
       const result = await signIn.create({
@@ -41,14 +49,27 @@ export default function LoginPage() {
         router.push("/dashboard");
       }
     } catch (err: unknown) {
-      const clerkError = err as { errors?: { message: string }[] };
-      setError(clerkError.errors?.[0]?.message ?? "Email o password errati");
+      const clerkError = err as {
+        errors?: { code: string; message: string }[];
+      };
+      const errorCode = clerkError.errors?.[0]?.code;
+
+      if (errorCode === "form_identifier_not_found") {
+        setError("Email non trovata. Controlla o registrati.");
+        setErrorField("email");
+      } else if (errorCode === "form_password_incorrect") {
+        setError("Password errata. Riprova.");
+        setErrorField("password");
+      } else if (errorCode === "session_exists") {
+        router.push("/dashboard");
+      } else {
+        setError("Errore durante l'accesso. Riprova.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // Non mostrare il form se già loggato
   if (isSignedIn) {
     return null;
   }
@@ -74,7 +95,11 @@ export default function LoginPage() {
             onChange={handleChange}
             placeholder="mario@ristorante.it"
             required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm"
+            className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 text-sm transition-colors ${
+              errorField === "email"
+                ? "border-red-500 focus:ring-red-500 bg-red-50"
+                : "border-gray-200 focus:ring-gray-900"
+            }`}
           />
         </div>
 
@@ -89,7 +114,11 @@ export default function LoginPage() {
             onChange={handleChange}
             placeholder="••••••••"
             required
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm"
+            className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 text-sm transition-colors ${
+              errorField === "password"
+                ? "border-red-500 focus:ring-red-500 bg-red-50"
+                : "border-gray-200 focus:ring-gray-900"
+            }`}
           />
         </div>
 
