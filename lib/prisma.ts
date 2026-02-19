@@ -1,4 +1,10 @@
-// src/lib/prisma.ts
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../app/generated/prisma/client";
 
-export const prisma = new PrismaClient();
+const globalForPrisma = globalThis as unknown as {
+  prisma: InstanceType<typeof PrismaClient> | undefined;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const prisma = globalForPrisma.prisma ?? new (PrismaClient as any)();
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

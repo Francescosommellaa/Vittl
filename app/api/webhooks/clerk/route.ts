@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -58,24 +57,22 @@ export async function POST(req: Request) {
       (unsafe_metadata?.restaurantName as string) || "Il mio ristorante";
 
     try {
-      // Crea Tenant (ristorante) + User in una transazione
-      await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-        const tenant = await tx.tenant.create({
-          data: { name: restaurantName, plan: "FREE" },
-        });
+      // Creiamo Tenant e User separatamente — niente $transaction, niente problemi di tipi
+      const tenant = await prisma.tenant.create({
+        data: { name: restaurantName, plan: "FREE" },
+      });
 
-        await tx.user.create({
-          data: {
-            clerkId,
-            email,
-            name,
-            phone,
-            primaryTenantId: tenant.id,
-            staffMemberships: {
-              create: { tenantId: tenant.id, role: "OWNER" },
-            },
+      await prisma.user.create({
+        data: {
+          clerkId,
+          email,
+          name,
+          phone,
+          primaryTenantId: tenant.id,
+          staffMemberships: {
+            create: { tenantId: tenant.id, role: "OWNER" },
           },
-        });
+        },
       });
     } catch (err) {
       console.error("[WEBHOOK] Error creating user in DB:", err);
@@ -85,8 +82,6 @@ export async function POST(req: Request) {
 
   if (evt.type === "user.deleted") {
     const { id: clerkId } = evt.data;
-    // Soft delete o eliminazione — a te la scelta
-    // Per ora logghiamo solo
     console.log(`[WEBHOOK] User deleted: ${clerkId}`);
   }
 
