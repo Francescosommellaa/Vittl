@@ -162,3 +162,7 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ received: true });
 }
+
+// force no-cache — necessario per evitare che Vercel Edge cachi il route
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
