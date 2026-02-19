@@ -1,58 +1,74 @@
-import { currentUser } from "@clerk/nextjs/server";
+/**
+ * API TEMPORANEA — Sync manuale utente Clerk → DB
+ * CANCELLARE dopo l'uso
+ *
+ * GET https://vittl.it/api/dev/sync-user?clerkId=user_39tXNkxKnt7EsWYMhWpny7Nu0Te&secret=vittl_dev_2026
+ */
+
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-/**
- * syncUser
- * --------
- * Garantisce che l'utente Clerk esista nel DB Neon.
- * Chiamata ad ogni accesso alla dashboard come fallback al webhook.
- *
- * Crea in ordine (solo se mancanti):
- *  1. Tenant  (account/billing unit)
- *  2. Location (sede default — nome = nome ristorante)
- *  3. User con StaffMembership OWNER
- *
- * Se l'utente esiste già → noop, ritorna subito.
- * Idempotente: sicuro da chiamare ad ogni render del layout.
- */
-export async function syncUser() {
-  const clerkUser = await currentUser();
-  if (!clerkUser) return null;
+export const dynamic = "force-dynamic";
 
-  // Cerca l'utente nel DB
-  const existing = await prisma.user.findUnique({
-    where: { clerkId: clerkUser.id },
-    include: {
-      primaryTenant: {
-        include: {
-          locations: { orderBy: { createdAt: "asc" }, take: 1 },
-        },
-      },
-    },
+const DEV_SECRET = "vittl_dev_2026";
+
+export async function GET(request: NextRequest): Promise<NextResponse> {
+  const { searchParams } = new URL(request.url);
+  const secret = searchParams.get("secret");
+  const clerkId = searchParams.get("clerkId");
+
+  if (secret !== DEV_SECRET) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  if (!clerkId) {
+    return NextResponse.json({ error: "Missing clerkId" }, { status: 400 });
+  }
+
+  const CLERK_SECRET_KEY = process.env.CLERK_SECRET_KEY;
+  if (!CLERK_SECRET_KEY) {
+    return NextResponse.json(
+      { error: "Missing CLERK_SECRET_KEY" },
+      { status: 500 },
+    );
+  }
+
+  const clerkRes = await fetch(`https://api.clerk.com/v1/users/${clerkId}`, {
+    headers: { Authorization: `Bearer ${CLERK_SECRET_KEY}` },
   });
+  if (!clerkRes.ok) {
+    return NextResponse.json(
+      { error: "Clerk user not found" },
+      { status: 404 },
+    );
+  }
 
-  // Utente già sincronizzato → ritorna subito
-  if (existing) return existing;
+  const cu = await clerkRes.json();
+  const email = cu.email_addresses[0]?.email_address as string | undefined;
+  if (!email) return NextResponse.json({ error: "No email" }, { status: 400 });
 
-  // ── Nuovo utente: crea Tenant + Location + User ──────────────────────────
+  const existing = await prisma.user.findUnique({ where: { clerkId } });
+  if (existing) {
+    return NextResponse.json({
+      ok: true,
+      message: "User already in DB",
+      userId: existing.id,
+    });
+  }
 
-  const email = clerkUser.emailAddresses[0]?.emailAddress ?? "";
   const name =
-    [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || null;
-  const phone = (clerkUser.unsafeMetadata?.phone as string | undefined) ?? null;
+    [cu.first_name as string, cu.last_name as string]
+      .filter(Boolean)
+      .join(" ")
+      .trim() || null;
+  const phone = (cu.unsafe_metadata?.phone as string) || null;
   const restaurantName =
-    (clerkUser.unsafeMetadata?.restaurantName as string | undefined) ||
+    (cu.unsafe_metadata?.restaurantName as string)?.trim() ||
     "Il mio ristorante";
 
-  // 1. Tenant
   const tenant = await prisma.tenant.create({
-    data: {
-      name: restaurantName,
-      plan: "FREE",
-    },
+    data: { name: restaurantName, plan: "FREE", currency: "EUR" },
   });
 
-  // 2. Location default (stessa del nome ristorante)
   const location = await prisma.location.create({
     data: {
       tenantId: tenant.id,
@@ -62,35 +78,24 @@ export async function syncUser() {
     },
   });
 
-  // 3. User con memberships (Tenant + Location)
   const user = await prisma.user.create({
+    data: { clerkId, email, name, phone, primaryTenantId: tenant.id },
+  });
+
+  await prisma.staffMembership.create({
     data: {
-      clerkId: clerkUser.id,
-      email,
-      name,
-      phone,
-      primaryTenantId: tenant.id,
-      staffMemberships: {
-        create: [
-          // Membership a livello Tenant
-          { tenantId: tenant.id, role: "OWNER" },
-          // Membership a livello Location
-          { tenantId: tenant.id, locationId: location.id, role: "OWNER" },
-        ],
-      },
-    },
-    include: {
-      primaryTenant: {
-        include: {
-          locations: { orderBy: { createdAt: "asc" }, take: 1 },
-        },
-      },
+      userId: user.id,
+      tenantId: tenant.id,
+      locationId: location.id,
+      role: "OWNER",
     },
   });
 
-  console.log(
-    `[syncUser] Nuovo utente creato: ${email} → Tenant: ${tenant.id} → Location: ${location.id}`,
-  );
-
-  return user;
+  return NextResponse.json({
+    ok: true,
+    message: "Utente sincronizzato con successo",
+    user: { id: user.id, email, name },
+    tenant: { id: tenant.id, name: restaurantName },
+    location: { id: location.id },
+  });
 }
