@@ -1,24 +1,40 @@
-import type { ReactNode } from "react";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
+import DashboardShell from "./components/DashboardShell";
 
-interface DashboardLayoutProps {
-  children: ReactNode;
-}
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { userId } = await auth();
+  if (!userId) redirect("/login");
 
-export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const clerkUser = await currentUser();
+
+  let restaurantName = "Il mio ristorante";
+  let plan: string = "FREE";
+
+  try {
+    const dbUser = await prisma.user.findUnique({
+      where: { clerkId: userId },
+      include: { primaryTenant: true },
+    });
+    restaurantName = dbUser?.primaryTenant?.name ?? restaurantName;
+    plan = dbUser?.primaryTenant?.plan ?? "FREE";
+  } catch {
+    // DB non ancora sincronizzato (webhook non ancora configurato)
+  }
+
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow">
-        <nav className="p-6">
-          <h2 className="text-lg font-semibold mb-4">Dashboard</h2>
-          {/* Add navigation links here */}
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">{children}</div>
-      </main>
-    </div>
+    <DashboardShell
+      userName={clerkUser?.firstName ?? ""}
+      userImageUrl={clerkUser?.imageUrl ?? ""}
+      restaurantName={restaurantName}
+      plan={plan}
+    >
+      {children}
+    </DashboardShell>
   );
 }
