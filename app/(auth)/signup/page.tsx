@@ -1,12 +1,13 @@
 "use client";
 
-import { useSignUp } from "@clerk/nextjs";
+import { useSignUp, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 export default function SignupPage() {
   const { isLoaded, signUp, setActive } = useSignUp();
+  const { isSignedIn } = useAuth();
   const router = useRouter();
 
   const [step, setStep] = useState<"form" | "verify">("form");
@@ -21,6 +22,13 @@ export default function SignupPage() {
     restaurantName: "",
     password: "",
   });
+
+  // Se già loggato, redirect a dashboard
+  useEffect(() => {
+    if (isSignedIn) {
+      router.push("/dashboard");
+    }
+  }, [isSignedIn, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -38,7 +46,6 @@ export default function SignupPage() {
         lastName: form.name.split(" ").slice(1).join(" ") || undefined,
         emailAddress: form.email,
         password: form.password,
-        // Salviamo phone e restaurantName come unsafeMetadata (disponibili subito)
         unsafeMetadata: {
           phone: form.phone,
           restaurantName: form.restaurantName,
@@ -77,6 +84,11 @@ export default function SignupPage() {
       setLoading(false);
     }
   };
+
+  // Non mostrare il form se già loggato
+  if (isSignedIn) {
+    return null;
+  }
 
   if (step === "verify") {
     return (
@@ -200,7 +212,7 @@ export default function SignupPage() {
         </div>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
-
+        <div id="clerk-captcha" className="mb-4"></div>
         <button
           type="submit"
           disabled={loading}
