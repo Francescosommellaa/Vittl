@@ -2,17 +2,30 @@ import { PrismaClient } from "../app/generated/prisma/client";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool } from "@neondatabase/serverless";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const adapter = new PrismaNeon(pool);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PrismaClientType = any;
 
 const globalForPrisma = globalThis as unknown as {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  prisma: any | undefined;
+  prisma: PrismaClientType | undefined;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  new (PrismaClient as any)({ adapter });
+function createPrismaClient(): PrismaClientType {
+  const connectionString = process.env.DATABASE_URL;
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+  if (!connectionString) {
+    throw new Error(
+      "[Prisma] DATABASE_URL is not set. Check your environment variables.",
+    );
+  }
+
+  const pool = new Pool({ connectionString });
+  const adapter = new PrismaNeon(pool);
+  return new (PrismaClient as PrismaClientType)({ adapter });
+}
+
+export const prisma: PrismaClientType =
+  globalForPrisma.prisma ?? createPrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
