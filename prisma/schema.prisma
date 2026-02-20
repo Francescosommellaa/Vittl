@@ -1,10 +1,12 @@
 generator client {
-  provider        = "prisma-client"
-  output          = "../app/generated/prisma"
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_POSTGRES_PRISMA_URL") // pooled (Vercel Neon)
+  directUrl = env("DATABASE_URL")                 // direct (per migrate)
 }
 
 // ---------- ENUMS ----------
