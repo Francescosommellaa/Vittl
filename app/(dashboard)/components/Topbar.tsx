@@ -12,10 +12,6 @@ const PAGE_TITLES: Record<string, { title: string; subtitle?: string }> = {
     title: "Ricette",
     subtitle: "Gestisci le tue ricette e il food cost",
   },
-  "/dashboard/ingredienti": {
-    title: "Ingredienti",
-    subtitle: "Ingredienti, prezzi e allergeni",
-  },
   "/dashboard/menu": {
     title: "Menu digitale",
     subtitle: "Menu QR e pagine pubbliche",

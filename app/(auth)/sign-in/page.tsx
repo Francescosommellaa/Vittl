@@ -25,7 +25,6 @@ export default function LoginPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
-    // Reset errore quando l'utente modifica il campo
     if (errorField === e.target.name) {
       setError("");
       setErrorField(null);
@@ -72,9 +71,7 @@ export default function LoginPage() {
     }
   };
 
-  if (isSignedIn) {
-    return null;
-  }
+  if (isSignedIn) return null;
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
@@ -106,9 +103,18 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Password
-          </label>
+          {/* Label + link password dimenticata sulla stessa riga */}
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
+            <Link
+              href="/sign-in/forgot-password"
+              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              Password dimenticata?
+            </Link>
+          </div>
           <input
             name="password"
             type="password"
@@ -135,7 +141,30 @@ export default function LoginPage() {
         </button>
       </form>
 
-      <p className="text-center text-sm text-gray-500 mt-6">
+      {/* Link home ← AGGIUNTO */}
+      <div className="text-center mt-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+            />
+          </svg>
+          Torna alla home
+        </Link>
+      </div>
+
+      <p className="text-center text-sm text-gray-500 mt-3">
         Non hai un account?{" "}
         <Link
           href="/sign-up"

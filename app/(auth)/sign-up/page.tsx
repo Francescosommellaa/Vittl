@@ -27,7 +27,6 @@ export default function SignupPage() {
     password: "",
   });
 
-  // Validazione password
   const passwordChecks = useMemo(() => {
     const password = form.password;
     return {
@@ -40,9 +39,7 @@ export default function SignupPage() {
   }, [form.password]);
 
   const passwordStrength = useMemo(() => {
-    const checks = Object.values(passwordChecks);
-    const passed = checks.filter(Boolean).length;
-    return passed;
+    return Object.values(passwordChecks).filter(Boolean).length;
   }, [passwordChecks]);
 
   const strengthColor = useMemo(() => {
@@ -67,11 +64,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (step !== "verify" || countdown <= 0) return;
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
+    const timer = setInterval(() => setCountdown((prev) => prev - 1), 1000);
     return () => clearInterval(timer);
   }, [step, countdown]);
 
@@ -87,7 +80,6 @@ export default function SignupPage() {
     e.preventDefault();
     if (!isLoaded) return;
 
-    // Verifica che tutti i requisiti password siano soddisfatti
     if (passwordStrength < 5) {
       setError("La password non soddisfa tutti i requisiti.");
       setErrorField("password");
@@ -182,19 +174,30 @@ export default function SignupPage() {
     }
   };
 
-  if (isSignedIn) {
-    return null;
-  }
+  if (isSignedIn) return null;
 
+  // ── Step: verifica email ─────────────────────────────────────────────────
   if (step === "verify") {
     return (
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
         <h1 className="text-2xl font-semibold text-gray-900 mb-2">
           Verifica email
         </h1>
-        <p className="text-gray-500 text-sm mb-6">
+        <p className="text-gray-500 text-sm mb-1">
           Abbiamo inviato un codice a <strong>{form.email}</strong>
         </p>
+
+        {/* ← AGGIUNTO: modifica email */}
+        <button
+          onClick={() => {
+            setStep("form");
+            setError("");
+            setCode("");
+          }}
+          className="text-xs text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2 mb-6 block"
+        >
+          Email sbagliata? Modifica
+        </button>
 
         <form onSubmit={handleVerify} className="space-y-4">
           <input
@@ -245,6 +248,7 @@ export default function SignupPage() {
     );
   }
 
+  // ── Step: form registrazione ─────────────────────────────────────────────
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
       <div className="mb-8">
@@ -383,7 +387,6 @@ export default function SignupPage() {
             </button>
           </div>
 
-          {/* Barra di forza */}
           {form.password.length > 0 && (
             <div className="mt-2">
               <div className="flex items-center justify-between mb-1">
@@ -405,8 +408,6 @@ export default function SignupPage() {
                   {strengthText}
                 </span>
               </div>
-
-              {/* Requisiti */}
               <div className="grid grid-cols-2 gap-1 mt-2">
                 <RequirementItem
                   met={passwordChecks.minLength}
@@ -431,7 +432,7 @@ export default function SignupPage() {
         </div>
 
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <div id="clerk-captcha" className="mb-4"></div>
+        <div id="clerk-captcha" className="mb-4" />
         <button
           type="submit"
           disabled={loading}
@@ -441,7 +442,30 @@ export default function SignupPage() {
         </button>
       </form>
 
-      <p className="text-center text-sm text-gray-500 mt-6">
+      {/* ← AGGIUNTO: link home */}
+      <div className="text-center mt-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+        >
+          <svg
+            className="w-3.5 h-3.5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+            />
+          </svg>
+          Torna alla home
+        </Link>
+      </div>
+
+      <p className="text-center text-sm text-gray-500 mt-3">
         Hai già un account?{" "}
         <Link
           href="/sign-in"
@@ -454,7 +478,6 @@ export default function SignupPage() {
   );
 }
 
-// Componente per i requisiti password
 function RequirementItem({ met, text }: { met: boolean; text: string }) {
   return (
     <div className="flex items-center gap-1.5">

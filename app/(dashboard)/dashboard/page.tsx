@@ -4,15 +4,12 @@ import { prisma } from "@/lib/prisma";
 import {
   ChefHat,
   QrCode,
-  Package,
   Users,
   ArrowRight,
   ShoppingBasket,
   TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
-
-// ── Tipi ──────────────────────────────────────────────────────────────────────
 
 interface Stat {
   label: string;
@@ -28,20 +25,13 @@ interface QuickAction {
   icon: React.ElementType;
 }
 
-// ── Dati ──────────────────────────────────────────────────────────────────────
-
+// ── FIX 1: rimosso "Aggiungi ingrediente" da QUICK_ACTIONS ──
 const QUICK_ACTIONS: QuickAction[] = [
   {
     href: "/dashboard/ricette",
     label: "Nuova ricetta",
     description: "Food cost e allergeni calcolati in automatico",
     icon: ChefHat,
-  },
-  {
-    href: "/dashboard/ingredienti",
-    label: "Aggiungi ingrediente",
-    description: "Prezzi e allergeni, la base di tutto",
-    icon: Package,
   },
   {
     href: "/dashboard/menu",
@@ -57,17 +47,14 @@ const QUICK_ACTIONS: QuickAction[] = [
   },
 ];
 
-// ── Component ─────────────────────────────────────────────────────────────────
-
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect("/sign-in");
 
-  // Fetch dati reali
   let firstName = "";
+  // ── FIX 2: rimosso stat "Ingredienti" ──
   let stats: Stat[] = [
     { label: "Ricette", value: 0, href: "/dashboard/ricette" },
-    { label: "Ingredienti", value: 0, href: "/dashboard/ingredienti" },
     { label: "Menu attivi", value: 0, href: "/dashboard/menu" },
   ];
 
@@ -78,7 +65,6 @@ export default async function DashboardPage() {
         primaryTenant: {
           include: {
             recipes: { select: { id: true } },
-            ingredients: { select: { id: true } },
             locations: {
               include: {
                 menus: { where: { isPublished: true }, select: { id: true } },
@@ -103,11 +89,6 @@ export default async function DashboardPage() {
           href: "/dashboard/ricette",
         },
         {
-          label: "Ingredienti",
-          value: tenant.ingredients.length,
-          href: "/dashboard/ingredienti",
-        },
-        {
           label: "Menu attivi",
           value: menuCount,
           href: "/dashboard/menu",
@@ -122,7 +103,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-10">
-      {/* ── Welcome ─────────────────────────────────────────────────────── */}
+      {/* ── Welcome ── */}
       <div>
         <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase mb-2">
           Benvenuto
@@ -135,8 +116,8 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      {/* ── Stats ───────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* ── Stats ── */}
+      <div className="grid grid-cols-2 gap-4">
         {stats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
             <div className="group bg-white rounded-3xl p-6 border border-gray-100 hover:shadow-lg hover:shadow-gray-200/60 hover:-translate-y-0.5 transition-all duration-300">
@@ -158,7 +139,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      {/* ── Onboarding vuoto o azioni rapide ──────────────────────────── */}
+      {/* ── Onboarding / Azioni rapide ── */}
       {hasNoData ? (
         <div>
           <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase mb-4">
@@ -181,31 +162,39 @@ export default async function DashboardPage() {
               <h3 className="text-2xl font-semibold text-white tracking-tight mb-2">
                 Il tuo ristorante è pronto.
               </h3>
+              {/* ── FIX 3: descrizione aggiornata ── */}
               <p className="text-white/60 font-light leading-relaxed max-w-md">
-                Parti dagli ingredienti, poi aggiungi le ricette. Vittl
-                calcolerà food cost e allergeni in automatico.
+                Crea la tua prima ricetta, costruisci il menu, pubblicalo e
+                genera il QR per i tuoi clienti.
               </p>
             </div>
 
-            {/* Steps */}
+            {/* ── FIX 4: steps aggiornati ── */}
             <div className="divide-y divide-gray-100">
               {[
                 {
                   step: "01",
-                  label: "Aggiungi i tuoi ingredienti",
-                  description: "Con prezzi per unità e allergeni",
-                  href: "/dashboard/ingredienti",
-                },
-                {
-                  step: "02",
                   label: "Crea la prima ricetta",
-                  description: "Food cost calcolato automaticamente",
+                  description:
+                    "Food cost e allergeni calcolati automaticamente",
                   href: "/dashboard/ricette",
                 },
                 {
+                  step: "02",
+                  label: "Crea un menu digitale",
+                  description: "Organizza le ricette in sezioni e categorie",
+                  href: "/dashboard/menu",
+                },
+                {
                   step: "03",
-                  label: "Pubblica un menu digitale",
-                  description: "QR code pronto in pochi clic",
+                  label: "Pubblica il menu",
+                  description: "Rendilo accessibile ai clienti in un click",
+                  href: "/dashboard/menu",
+                },
+                {
+                  step: "04",
+                  label: "Crea e associa un QR al menu",
+                  description: "Genera il QR e collegalo al menu pubblicato",
                   href: "/dashboard/menu",
                 },
               ].map((s) => (
@@ -230,7 +219,6 @@ export default async function DashboardPage() {
           </div>
         </div>
       ) : (
-        /* Azioni rapide quando c'è già dati */
         <div>
           <p className="text-xs font-semibold text-gray-400 tracking-widest uppercase mb-4">
             Azioni rapide
@@ -264,7 +252,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Acquisti shortcut ─────────────────────────────────────────── */}
+      {/* ── Acquisti shortcut ── */}
       <div className="bg-white rounded-3xl p-6 border border-gray-100 flex items-center justify-between gap-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-gray-50 rounded-2xl shrink-0">

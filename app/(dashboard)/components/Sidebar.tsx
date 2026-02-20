@@ -8,7 +8,6 @@ import { useClerk } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   ChefHat,
-  Package,
   QrCode,
   Users,
   ShoppingBasket,
@@ -44,7 +43,6 @@ import type { TenantPlan } from "@/app/generated/prisma/client";
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/dashboard/ricette", label: "Ricette", icon: ChefHat },
-  { href: "/dashboard/ingredienti", label: "Ingredienti", icon: Package },
   { href: "/dashboard/menu", label: "Menu digitale", icon: QrCode },
   { href: "/dashboard/feed", label: "Feed", icon: Users },
   { href: "/dashboard/acquisti", label: "Acquisti", icon: ShoppingBasket },
