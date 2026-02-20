@@ -101,8 +101,10 @@ model User {
   email     String   @unique
   name      String?
   phone     String?
+  isVittlAdmin Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
 
   staffMemberships StaffMembership[]
   primaryTenantId  String?
