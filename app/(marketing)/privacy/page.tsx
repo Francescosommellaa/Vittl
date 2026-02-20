@@ -215,7 +215,7 @@ export default function PrivacyPage() {
                                 key={k}
                                 className="flex items-start gap-3 mt-2"
                               >
-                                <span className="text-gray-300 mt-0.5 flex-shrink-0">
+                                <span className="text-gray-300 mt-0.5 shrink-0">
                                   —
                                 </span>
                                 <span>

@@ -48,24 +48,26 @@ export async function POST(req: Request) {
     const restaurantName = meta.restaurantName || "Il mio ristorante";
     const phone = meta.phone || null;
 
+    // Idempotenza: se l'utente esiste già (retry di Clerk) → 200 OK
+    const existing = await prisma.user.findUnique({ where: { clerkId: id } });
+    if (existing) {
+      return new Response("Already processed", { status: 200 });
+    }
+
     await prisma.$transaction(async (tx) => {
-      // 1. Crea utente
       const user = await tx.user.create({
         data: { clerkId: id, email, name, phone },
       });
 
-      // 2. Crea tenant (workspace)
       const tenant = await tx.tenant.create({
         data: { name: restaurantName, plan: "FREE", currency: "EUR" },
       });
 
-      // 3. Collega utente al tenant
       await tx.user.update({
         where: { id: user.id },
         data: { primaryTenantId: tenant.id },
       });
 
-      // 4. Crea sede di default
       const location = await tx.location.create({
         data: {
           tenantId: tenant.id,
@@ -74,7 +76,6 @@ export async function POST(req: Request) {
         },
       });
 
-      // 5. Crea membership OWNER
       await tx.staffMembership.create({
         data: {
           userId: user.id,
