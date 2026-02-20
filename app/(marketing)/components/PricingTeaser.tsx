@@ -51,7 +51,7 @@ export default function PricingTeaser() {
                   )}
                 </ul>
                 <Link
-                  href="/signup"
+                  href="/sign-up"
                   className="block text-center py-3 bg-gray-100 text-gray-700 rounded-full text-sm font-semibold hover:bg-gray-200 transition-all"
                 >
                   Inizia gratis

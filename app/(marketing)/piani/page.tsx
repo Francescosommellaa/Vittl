@@ -21,8 +21,8 @@ const plans = [
     name: "Free",
     monthlyPrice: 0,
     annualPrice: 0,
-    stripeMonthly: "/signup",
-    stripeAnnual: "/signup",
+    stripeMonthly: "/sign-up",
+    stripeAnnual: "/sign-up",
     description: "Per iniziare senza rischi.",
     highlight: false,
     features: [
@@ -566,7 +566,7 @@ export default function PianiPage() {
           </div>
           <div className="flex flex-col sm:flex-row gap-3 shrink-0">
             <Link
-              href="/signup"
+              href="/sign-up"
               className="group flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-gray-100 hover:scale-[1.03] hover:shadow-2xl hover:shadow-white/10"
             >
               Inizia gratis

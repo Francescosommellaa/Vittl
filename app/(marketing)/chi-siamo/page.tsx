@@ -349,7 +349,7 @@ export default function ChiSiamoPage() {
               </span>
             </Link>
             <Link
-              href="/signup"
+              href="/sign-up"
               className="flex items-center justify-center px-8 py-4 border border-gray-700 text-gray-300 rounded-full font-medium text-sm transition-all duration-300 hover:border-gray-500 hover:text-white hover:bg-white/5"
             >
               Inizia gratis

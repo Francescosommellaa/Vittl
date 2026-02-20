@@ -442,7 +442,7 @@ export default function ContattiPage() {
             </p>
           </div>
           <Link
-            href="/signup"
+            href="/sign-up"
             className="group shrink-0 flex items-center gap-2 px-8 py-4 bg-white text-gray-900 rounded-full font-semibold text-sm transition-all duration-300 hover:bg-gray-100 hover:scale-[1.03] hover:shadow-2xl hover:shadow-white/10"
           >
             Inizia gratis

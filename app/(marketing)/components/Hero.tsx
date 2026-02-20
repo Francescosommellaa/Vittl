@@ -114,7 +114,7 @@ export default function Hero() {
           style={{ transitionDelay: "240ms" }}
         >
           <Link
-            href="/signup"
+            href="/sign-up"
             className="group flex items-center gap-2 px-8 py-4 bg-gray-900 text-white rounded-full font-semibold text-base transition-all duration-300 hover:bg-gray-800 hover:scale-[1.03] hover:shadow-2xl hover:shadow-gray-900/25"
           >
             Inizia gratis

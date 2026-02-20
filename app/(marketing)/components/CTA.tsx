@@ -40,7 +40,7 @@ export default function CTA() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link
-              href="/signup"
+              href="/sign-up"
               className="group px-10 py-4 bg-white text-gray-900 rounded-full font-semibold text-base transition-all duration-300 hover:bg-gray-100 hover:scale-[1.03] hover:shadow-2xl hover:shadow-white/10"
             >
               Inizia gratis

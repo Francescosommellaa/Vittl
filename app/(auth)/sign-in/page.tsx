@@ -136,7 +136,7 @@ export default function LoginPage() {
       <p className="text-center text-sm text-gray-500 mt-6">
         Non hai un account?{" "}
         <Link
-          href="/signup"
+          href="/sign-up"
           className="text-gray-900 font-medium hover:underline"
         >
           Registrati gratis
