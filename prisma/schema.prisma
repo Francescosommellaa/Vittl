@@ -5,8 +5,8 @@ generator client {
 
 datasource db {
   provider  = "postgresql"
-  url       = env("DATABASE_POSTGRES_PRISMA_URL") // pooled (Vercel Neon)
-  directUrl = env("DATABASE_URL")                 // direct (per migrate)
+  url       = env("DATABASE_POSTGRES_PRISMA_URL") // pooled — runtime / produzione
+  directUrl = env("DATABASE_URL_UNPOOLED")        // diretto — per migrate dev
 }
 
 // ---------- ENUMS ----------
