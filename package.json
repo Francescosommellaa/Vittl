@@ -14,8 +14,6 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.37.5",
-    "@neondatabase/serverless": "^1.0.2",
-    "@prisma/adapter-neon": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "lucide-react": "^0.574.0",
     "next": "16.1.6",
