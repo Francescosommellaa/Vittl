@@ -22,6 +22,7 @@
     "ngrok": "^5.0.0-beta.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "resend": "^6.9.2",
     "svix": "^1.85.0"
   },
   "devDependencies": {
