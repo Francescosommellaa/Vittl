@@ -61,7 +61,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 
 export default async function DashboardPage() {
   const { userId } = await auth();
-  if (!userId) redirect("/login");
+  if (!userId) redirect("/sign-in");
 
   // Fetch dati reali
   let firstName = "";

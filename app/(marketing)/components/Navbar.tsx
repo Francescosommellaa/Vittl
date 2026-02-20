@@ -64,7 +64,7 @@ export default function Navbar() {
               Contatti
             </Link>
             <Link
-              href="/login"
+              href="/sign-in"
               className="px-6 py-2 bg-gray-900 text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-all hover:scale-105"
             >
               Accedi
@@ -134,7 +134,7 @@ export default function Navbar() {
               Contatti
             </Link>
             <Link
-              href="/login"
+              href="/sign-in"
               className="block px-6 py-2 bg-gray-900 text-white rounded-full text-sm font-medium text-center"
               onClick={() => setIsMobileMenuOpen(false)}
             >

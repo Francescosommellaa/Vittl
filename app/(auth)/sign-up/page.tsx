@@ -442,7 +442,7 @@ export default function SignupPage() {
       <p className="text-center text-sm text-gray-500 mt-6">
         Hai già un account?{" "}
         <Link
-          href="/login"
+          href="/sign-in"
           className="text-gray-900 font-medium hover:underline"
         >
           Accedi
