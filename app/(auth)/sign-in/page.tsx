@@ -18,6 +18,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isSignedIn) {
+      router.refresh();
       router.push("/dashboard");
     }
   }, [isSignedIn, router]);
@@ -46,6 +47,7 @@ export default function LoginPage() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
+        router.refresh();
         router.push("/dashboard");
       }
     } catch (err: unknown) {
