@@ -3,28 +3,24 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool } from "@neondatabase/serverless";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PrismaClientType = any;
+const globalForPrisma = globalThis as unknown as { prisma: any };
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClientType | undefined;
-};
+function getClient() {
+  // Vercel inietta le env vars a runtime — leggiamo qui dentro la funzione
+  const url =
+    process.env.DATABASE_URL ?? process.env.DATABASE_POSTGRES_PRISMA_URL;
 
-function createPrismaClient(): PrismaClientType {
-  const connectionString = process.env.DATABASE_URL;
-
-  if (!connectionString) {
-    throw new Error(
-      "[Prisma] DATABASE_URL is not set. Check your environment variables.",
-    );
+  if (!url) {
+    throw new Error("[Prisma] Nessuna DATABASE_URL trovata nelle env vars.");
   }
 
-  const pool = new Pool({ connectionString });
+  const pool = new Pool({ connectionString: url });
   const adapter = new PrismaNeon(pool);
-  return new (PrismaClient as PrismaClientType)({ adapter });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return new (PrismaClient as any)({ adapter });
 }
 
-export const prisma: PrismaClientType =
-  globalForPrisma.prisma ?? createPrismaClient();
+export const prisma = globalForPrisma.prisma ?? getClient();
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
