@@ -1,4 +1,42 @@
 {
+  "_note": {
+    "unit_valori": ["GRAM", "KILOGRAM", "MILLILITER", "LITER", "PIECE"],
+    "category_valori": [
+      "FRUTTA",
+      "VERDURA",
+      "ORTAGGI",
+      "CARNE",
+      "SALUMI",
+      "PESCE",
+      "LATTICINI",
+      "UOVA",
+      "CEREALI",
+      "LEGUMI",
+      "SPEZIE",
+      "CONDIMENTI",
+      "CONSERVE",
+      "BEVANDE",
+      "DOLCI",
+      "OLIO_GRASSI",
+      "ALTRO"
+    ],
+    "allergens_valori": [
+      "CEREALS_GLUTEN",
+      "CRUSTACEANS",
+      "EGGS",
+      "FISH",
+      "PEANUTS",
+      "SOYBEANS",
+      "MILK",
+      "NUTS",
+      "CELERY",
+      "MUSTARD",
+      "SESAME",
+      "SULPHITES",
+      "LUPIN",
+      "MOLLUSCS"
+    ]
+  },
   "ingredienti": [
     {
       "name": "Pomodoro San Marzano",

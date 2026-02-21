@@ -1,3 +1,17 @@
+import { auth } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+async function checkAdmin() {
+  const { userId } = await auth();
+  if (!userId) return null;
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { isVittlAdmin: true },
+  });
+  return user?.isVittlAdmin ? userId : null;
+}
+
 // GET — lista tutti gli ingredienti
 export async function GET() {
   const adminId = await checkAdmin();
@@ -72,15 +86,11 @@ export async function POST(req: NextRequest) {
       salt,
       prices:
         price != null
-          ? {
-              create: { validFrom: new Date(), price },
-            }
+          ? { create: { validFrom: new Date(), price } }
           : undefined,
       allergens:
         allergens.length > 0
-          ? {
-              create: allergens.map((a: string) => ({ allergen: a })),
-            }
+          ? { create: allergens.map((a: string) => ({ allergen: a })) }
           : undefined,
     },
     include: { prices: true, allergens: true },
