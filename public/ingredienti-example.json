@@ -1,0 +1,49 @@
+{
+  "ingredienti": [
+    {
+      "name": "Pomodoro San Marzano",
+      "unit": "KILOGRAM",
+      "category": "VERDURA",
+      "price": 2.5,
+      "allergens": [],
+      "kcal": 18,
+      "proteins": 0.9,
+      "carbs": 3.5,
+      "sugars": 2.6,
+      "fats": 0.2,
+      "saturatedFats": 0.03,
+      "fiber": 1.2,
+      "salt": 0.005
+    },
+    {
+      "name": "Farina 00",
+      "unit": "KILOGRAM",
+      "category": "CEREALI",
+      "price": 0.9,
+      "allergens": ["CEREALS_GLUTEN"],
+      "kcal": 364,
+      "proteins": 10.5,
+      "carbs": 72.0,
+      "sugars": 0.5,
+      "fats": 0.8,
+      "saturatedFats": 0.1,
+      "fiber": 2.7,
+      "salt": 0.002
+    },
+    {
+      "name": "Mozzarella di bufala",
+      "unit": "KILOGRAM",
+      "category": "LATTICINI",
+      "price": 14.0,
+      "allergens": ["MILK"],
+      "kcal": 270,
+      "proteins": 18.0,
+      "carbs": 1.0,
+      "sugars": 1.0,
+      "fats": 22.0,
+      "saturatedFats": 14.0,
+      "fiber": 0,
+      "salt": 0.5
+    }
+  ]
+}

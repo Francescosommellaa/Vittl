@@ -16,6 +16,21 @@ enum TenantPlan {
   ENTERPRISE
 }
 
+enum IngredientCategory {
+  FRUTTA
+  VERDURA
+  ORTAGGI
+  CARNE
+  PESCE
+  LATTICINI
+  CEREALI
+  LEGUMI
+  SPEZIE
+  CONDIMENTI
+  BEVANDE
+  ALTRO
+}
+
 enum StaffRole {
   OWNER
   MANAGER
@@ -68,7 +83,6 @@ model Tenant {
 
   // config vari (currency, ecc.)
   currency    String       @default("EUR")
-  ingredients Ingredient[]
   recipes     Recipe[]
 
   @@index([plan])
@@ -88,7 +102,6 @@ model Location {
   tenant           Tenant            @relation(fields: [tenantId], references: [id])
   menus            Menu[]
   recipes          Recipe[]
-  ingredients      Ingredient[]
   staffMemberships StaffMembership[]
 
   @@index([tenantId])
@@ -134,29 +147,36 @@ model StaffMembership {
 // ---------- INGREDIENTI & ALLERGENI ----------
 
 model Ingredient {
-  id         String   @id @default(uuid())
-  tenantId   String
-  locationId String?
-  name       String
-  unit       Unit
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String             @id @default(uuid())
+  name      String             @unique
+  unit      Unit
+  category  IngredientCategory @default(ALTRO)
 
-  tenant      Tenant               @relation(fields: [tenantId], references: [id])
-  location    Location?            @relation(fields: [locationId], references: [id])
+  // Tabella nutrizionale (per 100g / 100ml)
+  kcal          Float?
+  proteins      Float?
+  carbs         Float?
+  sugars        Float?
+  fats          Float?
+  saturatedFats Float?
+  fiber         Float?
+  salt          Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   prices      IngredientPrice[]
   allergens   IngredientAllergen[]
   recipeItems RecipeIngredient[]
 
-  @@unique([tenantId, name])
-  @@index([tenantId])
+  @@index([category])
 }
 
 model IngredientPrice {
   id           String   @id @default(uuid())
   ingredientId String
   validFrom    DateTime
-  price        Decimal  @db.Decimal(10, 4) // prezzo per unità base
+  price        Decimal  @db.Decimal(10, 4)
   createdAt    DateTime @default(now())
 
   ingredient Ingredient @relation(fields: [ingredientId], references: [id])
