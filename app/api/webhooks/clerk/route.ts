@@ -136,7 +136,6 @@ export async function POST(req: Request) {
           where: { tenantId },
         });
         if (remainingMembers === 0) {
-          await tx.ingredient.deleteMany({ where: { tenantId } });
           await tx.recipe.deleteMany({ where: { tenantId } });
           await tx.location.deleteMany({ where: { tenantId } });
           await tx.tenant.delete({ where: { id: tenantId } });
